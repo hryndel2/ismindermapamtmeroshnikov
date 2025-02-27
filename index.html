@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта с геолокацией</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .location-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="location-info" id="location-info">Получение местоположения...</div>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([55.7558, 37.6173], 10); // Координаты Москвы
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var marker = L.marker([55.7558, 37.6173]).addTo(map);
+        marker.bindPopup('<b>Ваше местоположение!</b>').openPopup();
+
+        function updateLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lon = position.coords.longitude;
+
+                    // Обновление маркера и центра карты
+                    marker.setLatLng([lat, lon]);
+                    map.setView([lat, lon], 10);
+
+                    // Обновление информации о местоположении
+                    document.getElementById('location-info').innerText = `Широта: ${lat.toFixed(4)}, Долгота: ${lon.toFixed(4)}`;
+                }, function(error) {
+                    console.error("Ошибка получения местоположения:", error);
+                    document.getElementById('location-info').innerText = "Ошибка получения местоположения.";
+                });
+            } else {
+                console.error("Геолокация не поддерживается вашим браузером.");
+                document.getElementById('location-info').innerText = "Геолокация не поддерживается вашим браузером.";
+            }
+        }
+
+        // Запрашиваем местоположение при загрузке
+        updateLocation();
+    </script>
+</body>
+</html>

@@ -31,7 +31,7 @@
 <body>
     <div class="location-info" id="location-info">Получение местоположения...</div>
     <div id="map"></div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+ <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map').setView([55.7558, 37.6173], 10); // Координаты Москвы
 
@@ -43,18 +43,35 @@
         var marker = L.marker([55.7558, 37.6173]).addTo(map);
         marker.bindPopup('<b>Ваше местоположение!</b>').openPopup();
 
+        function sendLocationToServer(lat, lon) {
+            fetch('http://laminaax.beget.tech/location.php', { // Замените на URL вашего PHP-скрипта
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ latitude: lat, longitude: lon })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Успешно отправлено:', data);
+            })
+            .catch((error) => {
+                console.error('Ошибка при отправке:', error);
+            });
+        }
+
         function updateLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var lat = position.coords.latitude;
                     var lon = position.coords.longitude;
 
-                    // Обновление маркера и центра карты
                     marker.setLatLng([lat, lon]);
                     map.setView([lat, lon], 10);
-
-                    // Обновление информации о местоположении
                     document.getElementById('location-info').innerText = `Широта: ${lat.toFixed(4)}, Долгота: ${lon.toFixed(4)}`;
+
+                    // Отправка местоположения на сервер
+                    sendLocationToServer(lat, lon);
                 }, function(error) {
                     console.error("Ошибка получения местоположения:", error);
                     document.getElementById('location-info').innerText = "Ошибка получения местоположения.";
